@@ -1,0 +1,6 @@
+{
+  "name": "Sonic Pizzas",
+  "description": "Sistema de pedidos online para a pizzaria Sonic Pizzas via QR Code de mesa e Painel de Caixa integrado.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

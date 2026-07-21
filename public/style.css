@@ -1,0 +1,113 @@
+/* Professional Polish Styles & Theme Settings */
+
+/* CSS custom variables and theme declarations */
+:root {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+  
+  --color-sonic-blue: #2563eb;
+  --color-sonic-gold: #f59e0b;
+  --color-sonic-red: #dc2626;
+  --color-sonic-dark: #0f172a;
+}
+
+/* Animations & Micro-interactions */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes modalZoom {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* Classes */
+.animate-fade-in {
+  animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-modal-zoom {
+  animation: modalZoom 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Hide default webkit scrollbars for category tabs */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+.bg-slate-900 ::-webkit-scrollbar-thumb,
+.bg-slate-950 ::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Ring Glow reminescent of gold/blue themes */
+.ring-glow {
+  box-shadow: 0 0 20px rgba(37, 99, 235, 0.15);
+}
+
+.sonic-badge {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: white;
+}
+
+/* Custom inputs styling */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Line clamps */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;  
+  overflow: hidden;
+}
+
+/* Interactive transitions */
+button, select, input, textarea, .card-hover {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Sidebar category transitions */
+.sidebar-btn-active {
+  background-color: var(--color-sonic-blue);
+  color: white;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+/* Dark theme specific modifications for Cashier */
+.keypad-btn:active {
+  transform: scale(0.95);
+  background-color: #334155;
+}

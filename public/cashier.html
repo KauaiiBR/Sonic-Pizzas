@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sonic Pizzas - Painel do Caixa</title>
+    <!-- Tailwind CSS v4 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Google Fonts: Inter & Space Grotesk -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body class="bg-slate-950 font-sans text-slate-100 h-screen overflow-hidden flex flex-col select-none">
+
+    <!-- AUTHENTICATION / LOCK KEYPAD VIEW -->
+    <div id="auth-panel" class="fixed inset-0 z-50 bg-slate-950 flex items-center justify-center p-4">
+      <div class="w-full max-w-sm bg-slate-900 p-6 sm:p-8 rounded-3xl shadow-2xl border border-slate-800 flex flex-col items-center transform scale-100 transition-all duration-300">
+        <!-- Logo Header -->
+        <div class="text-center mb-8 flex flex-col items-center">
+          <div class="w-14 h-14 bg-blue-600 rounded-full flex items-center justify-center text-white font-black italic text-xl shadow-lg ring-2 ring-blue-500/20 mb-4">
+            S
+          </div>
+          <h1 class="text-2xl font-black text-white tracking-tight uppercase italic leading-none">Sonic Pizzas</h1>
+          <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-2">Painel do Caixa</p>
+        </div>
+
+        <!-- PIN Indicator Dots -->
+        <div class="flex gap-4 justify-center mb-8">
+          <div id="pin-dot-1" class="w-3.5 h-3.5 rounded-full border border-slate-700 bg-transparent transition-all"></div>
+          <div id="pin-dot-2" class="w-3.5 h-3.5 rounded-full border border-slate-700 bg-transparent transition-all"></div>
+          <div id="pin-dot-3" class="w-3.5 h-3.5 rounded-full border border-slate-700 bg-transparent transition-all"></div>
+          <div id="pin-dot-4" class="w-3.5 h-3.5 rounded-full border border-slate-700 bg-transparent transition-all"></div>
+        </div>
+
+        <!-- PIN Keypad Grid -->
+        <div class="grid grid-cols-3 gap-3 w-full mb-6">
+          <button class="keypad-btn h-14 bg-slate-800/80 active:bg-slate-700 hover:bg-slate-800 text-white font-bold text-xl rounded-xl border border-slate-800 transition-all cursor-pointer">1</button>
+          <button class="keypad-btn h-14 bg-slate-800/80 active:bg-slate-700 hover:bg-slate-800 text-white font-bold text-xl rounded-xl border border-slate-800 transition-all cursor-pointer">2</button>
+          <button class="keypad-btn h-14 bg-slate-800/80 active:bg-slate-700 hover:bg-slate-800 text-white font-bold text-xl rounded-xl border border-slate-800 transition-all cursor-pointer">3</button>
+          <button class="keypad-btn h-14 bg-slate-800/80 active:bg-slate-700 hover:bg-slate-800 text-white font-bold text-xl rounded-xl border border-slate-800 transition-all cursor-pointer">4</button>
+          <button class="keypad-btn h-14 bg-slate-800/80 active:bg-slate-700 hover:bg-slate-800 text-white font-bold text-xl rounded-xl border border-slate-800 transition-all cursor-pointer">5</button>
+          <button class="keypad-btn h-14 bg-slate-800/80 active:bg-slate-700 hover:bg-slate-800 text-white font-bold text-xl rounded-xl border border-slate-800 transition-all cursor-pointer">6</button>
+          <button class="keypad-btn h-14 bg-slate-800/80 active:bg-slate-700 hover:bg-slate-800 text-white font-bold text-xl rounded-xl border border-slate-800 transition-all cursor-pointer">7</button>
+          <button class="keypad-btn h-14 bg-slate-800/80 active:bg-slate-700 hover:bg-slate-800 text-white font-bold text-xl rounded-xl border border-slate-800 transition-all cursor-pointer">8</button>
+          <button class="keypad-btn h-14 bg-slate-800/80 active:bg-slate-700 hover:bg-slate-800 text-white font-bold text-xl rounded-xl border border-slate-800 transition-all cursor-pointer">9</button>
+          <button id="keypad-clear" class="h-14 bg-red-950/40 active:bg-red-900/60 text-red-400 font-bold text-sm rounded-xl border border-red-900/30 transition-all cursor-pointer flex items-center justify-center">LIMPAR</button>
+          <button class="keypad-btn h-14 bg-slate-800/80 active:bg-slate-700 hover:bg-slate-800 text-white font-bold text-xl rounded-xl border border-slate-800 transition-all cursor-pointer">0</button>
+          <button id="keypad-ok" class="h-14 bg-green-950/40 active:bg-green-900/60 text-green-400 font-bold text-sm rounded-xl border border-green-900/30 transition-all cursor-pointer flex items-center justify-center">ENTRAR</button>
+        </div>
+
+        <div id="error-msg" class="h-5 text-xs text-red-500 font-semibold text-center transition-opacity opacity-0">
+          PIN Incorreto! Tente novamente.
+        </div>
+        
+        <p class="text-[10px] text-slate-500 font-medium tracking-tight mt-4 text-center">
+          Dica do Sandbox: O PIN padrão do caixa é <span class="font-bold text-slate-400 font-mono">1234</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- MAIN CASHIER APP VIEW -->
+    <div id="cashier-content" class="hidden w-full h-full flex flex-col overflow-hidden bg-slate-900 text-slate-100">
+      
+      <!-- Top Header Navigation -->
+      <header class="h-20 bg-slate-950 border-b border-slate-800 flex items-center justify-between px-6 sm:px-8 shrink-0 z-10">
+        <div class="flex items-center gap-3.5">
+          <div class="w-11 h-11 bg-blue-600 rounded-full flex items-center justify-center text-white font-black italic text-lg shadow-md ring-2 ring-blue-500/20 shrink-0">S</div>
+          <div>
+            <h1 class="text-xl font-black text-white tracking-tight uppercase italic leading-none flex items-center gap-2">
+              Sonic Pizzas 
+              <span class="text-[9px] uppercase font-bold tracking-widest bg-blue-600 text-white px-2 py-0.5 rounded-md normal-case font-sans">
+                Painel do Caixa
+              </span>
+            </h1>
+            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">Gerenciador de Pedidos & Mesas em Tempo Real</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-4">
+          <div class="flex flex-col items-end">
+            <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider leading-none">STATUS DO CAIXA</span>
+            <span class="text-xs text-green-400 font-black tracking-wider mt-0.5 flex items-center gap-1">
+              <span class="w-1.5 h-1.5 bg-green-400 rounded-full animate-ping"></span>
+              ONLINE
+            </span>
+          </div>
+          <div class="h-8 w-px bg-slate-800"></div>
+          <button 
+            id="logout-btn" 
+            class="p-2 bg-slate-800 hover:bg-red-950/60 hover:text-red-400 rounded-xl border border-slate-700 transition-all cursor-pointer active:scale-95"
+            title="Sair do Painel"
+          >
+            <i data-lucide="log-out" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- Subheader / Tabs bar -->
+      <div class="bg-slate-950/50 border-b border-slate-800/80 px-6 sm:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4 shrink-0">
+        <!-- Tabs selectors -->
+        <nav class="flex gap-2">
+          <button id="tab-btn-orders" class="tab-btn px-4 py-2 bg-blue-600 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all cursor-pointer">
+            Pedidos Ativos
+          </button>
+          <button id="tab-btn-stats" class="tab-btn px-4 py-2 bg-slate-800/50 hover:bg-slate-800 text-slate-400 hover:text-slate-200 text-xs font-bold uppercase tracking-wider rounded-xl transition-all cursor-pointer">
+            Estatísticas
+          </button>
+          <button id="tab-btn-menu" class="tab-btn px-4 py-2 bg-slate-800/50 hover:bg-slate-800 text-slate-400 hover:text-slate-200 text-xs font-bold uppercase tracking-wider rounded-xl transition-all cursor-pointer">
+            Gerenciar Cardápio
+          </button>
+        </nav>
+
+        <!-- Actions -->
+        <div class="flex items-center gap-3">
+          <button id="reset-menu-btn" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-slate-600 rounded-xl text-xs font-bold text-slate-300 cursor-pointer flex items-center gap-1.5 transition-all">
+            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+            Resetar Cardápio
+          </button>
+          <button id="clear-orders-btn" class="px-3 py-1.5 bg-red-950/20 hover:bg-red-950/60 border border-red-900/30 text-red-400 hover:text-red-300 rounded-xl text-xs font-bold cursor-pointer flex items-center gap-1.5 transition-all">
+            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+            Zerar Pedidos
+          </button>
+        </div>
+      </div>
+
+      <!-- MAIN SCENARIO VIEWPORTS -->
+      <main class="flex-1 overflow-hidden relative">
+        
+        <!-- SECTION: ACTIVE ORDERS -->
+        <div id="view-orders" class="tab-view w-full h-full flex flex-col p-6 overflow-hidden">
+          
+          <!-- Orders Filter strip -->
+          <div class="flex flex-wrap items-center justify-between gap-4 mb-4 shrink-0">
+            <div class="flex flex-wrap gap-1.5" id="order-filters-container">
+              <button data-filter="all" class="filter-btn px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold transition-all cursor-pointer">Todos</button>
+              <button data-filter="pendente" class="filter-btn px-3 py-1.5 bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 bg-amber-400 rounded-full"></span> Pendentes
+              </button>
+              <button data-filter="preparando" class="filter-btn px-3 py-1.5 bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse"></span> Cozinha
+              </button>
+              <button data-filter="pronto" class="filter-btn px-3 py-1.5 bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 bg-purple-400 rounded-full"></span> Prontos
+              </button>
+              <button data-filter="entregue" class="filter-btn px-3 py-1.5 bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 bg-green-400 rounded-full"></span> Entregues
+              </button>
+              <button data-filter="pago" class="filter-btn px-3 py-1.5 bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span> Pagos
+              </button>
+            </div>
+            
+            <p class="text-xs text-slate-400 font-semibold" id="orders-count-indicator">Mostrando 0 pedidos</p>
+          </div>
+
+          <!-- Orders Grid Container -->
+          <div id="orders-list-grid" class="flex-1 overflow-y-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 align-start content-start">
+            <!-- Order cards will be dynamically injected here -->
+          </div>
+        </div>
+
+        <!-- SECTION: STORE STATISTICS -->
+        <div id="view-stats" class="tab-view w-full h-full hidden p-6 overflow-y-auto space-y-8">
+          
+          <!-- Key Metrics Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <!-- Cards stats -->
+            <div class="bg-slate-800/40 border border-slate-800 rounded-2xl p-6 flex items-center gap-4">
+              <div class="w-12 h-12 bg-blue-600/10 text-blue-500 rounded-xl flex items-center justify-center shrink-0">
+                <i data-lucide="shopping-cart" class="w-6 h-6"></i>
+              </div>
+              <div>
+                <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Total de Pedidos</span>
+                <span id="stat-total-orders" class="text-2xl font-black text-white">0</span>
+              </div>
+            </div>
+
+            <div class="bg-slate-800/40 border border-slate-800 rounded-2xl p-6 flex items-center gap-4">
+              <div class="w-12 h-12 bg-amber-600/10 text-amber-500 rounded-xl flex items-center justify-center shrink-0">
+                <i data-lucide="clock" class="w-6 h-6 animate-pulse"></i>
+              </div>
+              <div>
+                <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Pedidos Pendentes</span>
+                <span id="stat-pending-orders" class="text-2xl font-black text-white">0</span>
+              </div>
+            </div>
+
+            <div class="bg-slate-800/40 border border-slate-800 rounded-2xl p-6 flex items-center gap-4">
+              <div class="w-12 h-12 bg-green-600/10 text-green-500 rounded-xl flex items-center justify-center shrink-0">
+                <i data-lucide="dollar-sign" class="w-6 h-6"></i>
+              </div>
+              <div>
+                <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Faturamento (Pagos)</span>
+                <span id="stat-revenue" class="text-2xl font-black text-white">R$ 0,00</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Popular Flavors Chart Section -->
+          <div class="bg-slate-800/30 border border-slate-800 rounded-2xl p-6 max-w-2xl">
+            <h3 class="text-sm font-bold text-slate-300 uppercase tracking-wider mb-6 flex items-center gap-2">
+              <i data-lucide="trending-up" class="w-4 h-4 text-blue-500"></i>
+              Sabores Mais Vendidos
+            </h3>
+            
+            <div id="popular-flavors-chart" class="space-y-4">
+              <!-- Dynamically injected bar rows -->
+              <p class="text-xs text-slate-400 py-6 text-center">Nenhuma pizza vendida ainda para computar estatísticas.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION: MANAGE MENU -->
+        <div id="view-menu" class="tab-view w-full h-full hidden flex flex-col overflow-hidden">
+          <!-- Sub-toolbar -->
+          <div class="px-6 py-4 border-b border-slate-800 bg-slate-950/20 flex flex-wrap items-center justify-between gap-4 shrink-0">
+            <div class="flex gap-1.5" id="menu-type-filters">
+              <button data-type="pizzas" class="menu-type-btn px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-bold transition-all cursor-pointer">Pizzas</button>
+              <button data-type="drinks" class="menu-type-btn px-4 py-2 bg-slate-800 text-slate-400 hover:text-slate-200 rounded-lg text-xs font-bold transition-all cursor-pointer">Bebidas</button>
+            </div>
+
+            <button id="add-menu-item-btn" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer active:scale-95">
+              <i data-lucide="plus" class="w-4 h-4"></i>
+              <span>Adicionar Item</span>
+            </button>
+          </div>
+
+          <!-- Scrollable listing container -->
+          <div class="flex-1 overflow-y-auto p-6">
+            <div id="menu-items-table" class="space-y-4 max-w-4xl">
+              <!-- Dynamically loaded item cards with edit capabilities -->
+            </div>
+          </div>
+        </div>
+
+      </main>
+
+      <!-- Bottom Status bar -->
+      <footer class="h-8 bg-slate-950 text-[10px] text-slate-500 flex items-center justify-center gap-4 uppercase font-bold tracking-wider shrink-0 border-t border-slate-800">
+        <span>Sonic Pizzas v3.0</span>
+        <span class="opacity-30">|</span>
+        <span>Acesso Restrito ao Caixa</span>
+        <span class="opacity-30">|</span>
+        <span>Mesa Terminal Ativa</span>
+      </footer>
+    </div>
+
+    <!-- MODAL: ADD / EDIT MENU ITEM -->
+    <div id="menu-item-modal" class="hidden fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-xs flex items-center justify-center p-4">
+      <div class="w-full max-w-md bg-slate-900 p-6 sm:p-8 rounded-3xl shadow-2xl border border-slate-800 max-h-[90vh] flex flex-col overflow-hidden">
+        <!-- Header -->
+        <div class="flex items-center justify-between pb-4 border-b border-slate-800 mb-6 shrink-0">
+          <h3 id="menu-modal-title" class="text-lg font-bold text-white">Editar Item do Cardápio</h3>
+          <button id="close-menu-modal-btn" class="p-1 rounded-lg hover:bg-slate-800 text-slate-400 cursor-pointer">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <!-- Form content -->
+        <form id="menu-item-form" class="flex-1 overflow-y-auto space-y-4 pr-1">
+          <input type="hidden" id="form-item-id" />
+          <input type="hidden" id="form-item-type" value="pizza" />
+
+          <div>
+            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Nome do Item</label>
+            <input 
+              type="text" 
+              id="form-item-name" 
+              required 
+              placeholder="Ex: Frango Supreme"
+              class="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 font-semibold text-white transition-all text-sm"
+            />
+          </div>
+
+          <div id="form-field-desc">
+            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Descrição / Ingredientes</label>
+            <textarea 
+              id="form-item-desc" 
+              placeholder="Ex: Peito de frango temperado, milho e catupiry..."
+              rows="2"
+              class="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 font-medium text-white transition-all text-sm resize-none"
+            ></textarea>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">URL da Imagem</label>
+            <input 
+              type="url" 
+              id="form-item-image" 
+              placeholder="https://images.unsplash.com/..."
+              class="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 font-medium text-white transition-all text-xs"
+            />
+          </div>
+
+          <!-- Section category selector -->
+          <div id="form-field-category">
+            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Categoria</label>
+            <select id="form-item-category" class="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 font-semibold text-white transition-all text-sm">
+              <option value="salgada">Salgada</option>
+              <option value="especial">Especial</option>
+              <option value="doce">Doce</option>
+            </select>
+          </div>
+
+          <!-- Section Prices: Pizza sizes prices -->
+          <div id="form-pizza-prices" class="space-y-3">
+            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Preços por Tamanho (R$)</label>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Brotinho</label>
+                <input type="number" id="price-brotinho" step="0.01" min="0" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl font-bold text-sm text-white" />
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Média</label>
+                <input type="number" id="price-media" step="0.01" min="0" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl font-bold text-sm text-white" />
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Grande</label>
+                <input type="number" id="price-grande" step="0.01" min="0" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl font-bold text-sm text-white" />
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Gigante</label>
+                <input type="number" id="price-gigante" step="0.01" min="0" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl font-bold text-sm text-white" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Section Price: Beverage flat price -->
+          <div id="form-drink-price" class="hidden">
+            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Preço da Bebida (R$)</label>
+            <input 
+              type="number" 
+              id="price-drink" 
+              step="0.01" 
+              min="0"
+              class="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl font-bold text-white text-sm"
+            />
+          </div>
+
+          <!-- Switch Popularity (Pizza only) -->
+          <div id="form-field-popular" class="flex items-center gap-3 bg-slate-800/40 p-3 rounded-xl border border-slate-800">
+            <input type="checkbox" id="form-item-popular" class="w-4 h-4 text-blue-600 bg-slate-800 border-slate-700 rounded" />
+            <div>
+              <span class="text-xs font-bold text-white block">Marcar como "Mais Vendido"</span>
+              <span class="text-[10px] text-slate-500">Destaca o item no cardápio do cliente com uma etiqueta.</span>
+            </div>
+          </div>
+
+          <!-- Submit -->
+          <button 
+            type="submit" 
+            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-2xl shadow-lg shadow-blue-500/10 uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2"
+          >
+            <i data-lucide="check-circle" class="w-4 h-4"></i>
+            <span>Salvar Item</span>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Script Cashier Application Logic -->
+    <script src="/js/cashier.js"></script>
+  </body>
+</html>

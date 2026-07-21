@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sonic Pizzas - Cardápio Digital</title>
+    <!-- Tailwind CSS v4 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Google Fonts: Inter & Space Grotesk -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body class="bg-slate-50 font-sans text-slate-800 h-screen overflow-hidden flex flex-col select-none">
+
+    <!-- LOGIN / TABLE SELECT MODAL (Shown when no table set) -->
+    <div id="login-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-200 p-6 sm:p-8 transform transition-all duration-300 scale-100">
+        <div class="text-center mb-8 flex flex-col items-center">
+          <div class="inline-flex items-center justify-center w-14 h-14 bg-blue-600 rounded-full text-white font-black italic text-xl shadow-lg ring-2 ring-blue-100 mb-4">
+            S
+          </div>
+          <h1 class="text-3xl font-black text-blue-900 tracking-tight uppercase italic leading-none">
+            Sonic Pizzas
+          </h1>
+          <p class="text-xs text-slate-400 font-bold uppercase tracking-wider mt-2">
+            Forno a Lenha & Rapidez
+          </p>
+        </div>
+
+        <form id="login-form" class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Número da Mesa</label>
+            <input 
+              type="number" 
+              id="table-input" 
+              required 
+              min="1" 
+              max="50" 
+              placeholder="Ex: 07" 
+              class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 font-bold text-slate-800 transition-all text-center text-lg"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Seu Nome (Opcional)</label>
+            <input 
+              type="text" 
+              id="name-input" 
+              placeholder="Ex: Rodrigo Silva" 
+              class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 font-semibold text-slate-800 transition-all text-center"
+            />
+          </div>
+          <button 
+            type="submit" 
+            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl shadow-xl shadow-blue-200 uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2"
+          >
+            <span>Entrar no Cardápio</span>
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </button>
+        </form>
+
+        <div class="mt-8 pt-6 border-t border-slate-100 text-center text-xs text-slate-400 font-medium">
+          © <span id="year-placeholder"></span> Sonic Pizzas - Todos os direitos reservados.
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN APP WRAPPER -->
+    <div id="app-content" class="hidden w-full h-full flex flex-col overflow-hidden">
+      
+      <!-- Header Navigation -->
+      <header class="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-6 sm:px-8 shrink-0 z-10">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-black italic text-xl shadow-lg ring-2 ring-blue-100">S</div>
+          <div>
+            <h1 class="text-2xl font-black text-blue-900 tracking-tight uppercase italic leading-none">Sonic Pizzas</h1>
+            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Forno a Lenha & Rapidez</p>
+          </div>
+        </div>
+        
+        <div class="flex items-center gap-4 sm:gap-6">
+          <div class="bg-red-50 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg border border-red-100 flex items-center gap-2.5 sm:gap-3">
+            <div class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+            <span id="mesa-indicator" class="text-xs sm:text-sm font-bold text-red-700 uppercase">MESA 00</span>
+          </div>
+          <div class="h-10 w-px bg-slate-200 hidden sm:block"></div>
+          
+          <!-- Tracker Order Active Status -->
+          <button 
+            id="track-order-btn" 
+            class="hidden bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-800 px-3 py-1.5 rounded-lg flex items-center gap-2 text-xs font-bold transition-all active:scale-95 cursor-pointer"
+          >
+            <i data-lucide="clock" class="w-3.5 h-3.5 text-amber-500 animate-spin"></i>
+            <span>Acompanhar</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Main Content Layout -->
+      <main class="flex-1 flex overflow-hidden relative">
+        
+        <!-- Sidebar Categories -->
+        <aside class="w-64 bg-white border-r border-slate-200 p-6 flex flex-col gap-2 shrink-0 hidden md:flex">
+          <h2 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Categorias</h2>
+          <div id="category-sidebar-list" class="space-y-1">
+            <!-- Sidebar category buttons injected by JS -->
+          </div>
+          
+          <div class="mt-auto p-4 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+            <p class="text-[10px] text-slate-500 text-center leading-relaxed font-semibold">
+              Adicione itens ao seu pedido. Toque em qualquer item para customizar sabores e tamanhos.
+            </p>
+          </div>
+        </aside>
+
+        <!-- Product Grid Area -->
+        <section class="flex-1 flex flex-col overflow-hidden bg-slate-50">
+          
+          <!-- Mobile Categories Scrollable Tab Bar -->
+          <div class="px-4 py-3 bg-white border-b border-slate-200 overflow-x-auto whitespace-nowrap flex gap-2 scrollbar-none md:hidden shrink-0">
+            <!-- Mobile category tabs injected by JS -->
+          </div>
+
+          <!-- Product Grid List -->
+          <div id="product-grid" class="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+            <!-- Product cards injected by JS -->
+          </div>
+        </section>
+
+        <!-- Shopping Cart Aside Panel -->
+        <aside id="cart-sidebar" class="w-80 bg-white border-l border-slate-200 flex flex-col shrink-0 z-20 transition-transform duration-300 fixed inset-y-0 right-0 transform translate-x-full md:relative md:translate-x-0">
+          <!-- Cart Header -->
+          <div class="p-6 border-b border-slate-100 flex items-center justify-between shrink-0">
+            <h2 class="text-lg font-bold flex items-center gap-2 text-slate-800">
+              🛒 Meu Pedido <span id="cart-count" class="text-blue-600 text-sm font-black">(00)</span>
+            </h2>
+            <button id="close-cart-btn" class="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 md:hidden transition-colors cursor-pointer">
+              <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+          </div>
+          
+          <!-- Cart Items Container -->
+          <div id="cart-items-list" class="flex-1 p-6 space-y-4 overflow-y-auto">
+            <!-- Cart items injected by JS -->
+            <div class="h-full flex flex-col items-center justify-center text-slate-400 py-12 text-center">
+              <i data-lucide="shopping-bag" class="w-12 h-12 stroke-1.5 mb-3 text-slate-300"></i>
+              <p class="text-sm font-bold">Seu carrinho está vazio</p>
+              <p class="text-xs text-slate-400 mt-1">Toque em um item para começar</p>
+            </div>
+          </div>
+
+          <!-- Cart Footer / Total Summary -->
+          <div class="p-6 bg-slate-50 border-t border-slate-200 space-y-4 shrink-0">
+            <div class="space-y-2">
+              <div class="flex justify-between items-center text-slate-500 text-xs font-semibold uppercase tracking-wider">
+                <span>Subtotal</span>
+                <span id="cart-subtotal">R$ 0,00</span>
+              </div>
+              <div class="flex justify-between items-center text-slate-500 text-xs font-semibold uppercase tracking-wider">
+                <span>Taxa de Serviço (10%)</span>
+                <span id="cart-service">R$ 0,00</span>
+              </div>
+              <div class="flex justify-between items-center pt-2 border-t border-slate-200">
+                <span class="font-bold text-slate-800">Total</span>
+                <span id="cart-total" class="text-2xl font-black text-blue-600">R$ 0,00</span>
+              </div>
+            </div>
+
+            <!-- Client Name and Notes fields inside footer -->
+            <div class="space-y-2">
+              <input 
+                type="text" 
+                id="cart-customer-name" 
+                placeholder="Seu nome" 
+                class="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 font-semibold text-slate-800"
+              />
+              <textarea 
+                id="cart-notes" 
+                placeholder="Observações gerais para a cozinha..." 
+                rows="2"
+                class="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 font-medium text-slate-800 resize-none"
+              ></textarea>
+            </div>
+
+            <button 
+              id="submit-order-btn" 
+              class="w-full bg-green-600 hover:bg-green-700 text-white font-black py-4 rounded-2xl shadow-xl shadow-green-100 uppercase tracking-wider transition-all cursor-pointer active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
+              disabled
+            >
+              <span>Enviar para o Caixa</span>
+              <i data-lucide="check-circle" class="w-4 h-4"></i>
+            </button>
+            <p class="text-[10px] text-center text-slate-400 font-semibold leading-normal">
+              Este pedido será processado imediatamente pelo caixa.
+            </p>
+          </div>
+        </aside>
+      </main>
+      
+      <!-- Bottom Branding / Footer -->
+      <footer class="h-8 bg-blue-900 text-[10px] text-blue-200 flex items-center justify-center gap-4 uppercase font-bold tracking-wider shrink-0 z-10 px-4">
+        <span>Sonic Pizzas v3.0</span>
+        <span class="opacity-30">|</span>
+        <span id="footer-table-desc">Terminal Identificado</span>
+        <span class="opacity-30">|</span>
+        <span>Mesa Ativa</span>
+      </footer>
+
+      <!-- Mobile Floating Cart Trigger Button -->
+      <button 
+        id="mobile-cart-trigger" 
+        class="fixed bottom-12 right-4 z-30 md:hidden bg-blue-600 hover:bg-blue-700 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-2xl active:scale-95 transition-transform cursor-pointer"
+      >
+        <div class="relative">
+          <i data-lucide="shopping-cart" class="w-6 h-6"></i>
+          <span id="mobile-cart-badge" class="absolute -top-2 -right-2 bg-red-600 text-white text-[9px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-blue-600">0</span>
+        </div>
+      </button>
+    </div>
+
+    <!-- CUSTOMIZATION MODAL (Pizza or Drink customization) -->
+    <div id="custom-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+      <div class="w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-200 max-h-[90vh] flex flex-col transform scale-95 transition-transform duration-300">
+        <!-- Modal Header -->
+        <div class="p-6 border-b border-slate-100 flex items-center justify-between shrink-0">
+          <h3 id="modal-title" class="text-xl font-bold text-slate-800">Customizar Item</h3>
+          <button id="close-modal-btn" class="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <!-- Modal Body Content -->
+        <div class="flex-1 p-6 overflow-y-auto space-y-6">
+          
+          <!-- Image and description summary -->
+          <div class="flex gap-4 items-start bg-slate-50 p-4 rounded-2xl border border-slate-100">
+            <img id="modal-product-image" src="" alt="" class="w-20 h-20 object-cover rounded-xl border border-slate-200/60 shrink-0" />
+            <div>
+              <h4 id="modal-product-name" class="font-bold text-slate-800"></h4>
+              <p id="modal-product-desc" class="text-xs text-slate-500 mt-1 leading-normal"></p>
+            </div>
+          </div>
+
+          <!-- SECTION: Size Selection (Only for Pizzas) -->
+          <div id="pizza-size-section" class="space-y-3">
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Tamanho da Pizza</label>
+            <div id="size-options-grid" class="grid grid-cols-2 gap-3">
+              <!-- Injected size buttons -->
+            </div>
+          </div>
+
+          <!-- SECTION: Half and Half Checkbox (Only for Pizzas in Grande or Gigante) -->
+          <div id="half-half-section" class="hidden">
+            <label class="flex items-center gap-3 bg-blue-50/50 hover:bg-blue-50 border border-blue-100 p-4 rounded-2xl cursor-pointer transition-all select-none">
+              <input type="checkbox" id="half-half-checkbox" class="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500" />
+              <div>
+                <span class="text-sm font-bold text-blue-900 block">Meio a Meio (2 Sabores)</span>
+                <span class="text-xs text-blue-600">Disponível nos tamanhos Grande e Gigante. O valor será a média aritmética de ambos!</span>
+              </div>
+            </label>
+          </div>
+
+          <!-- SECTION: Flavor Selection (Shown normally for pizza or half-and-half) -->
+          <div id="flavors-selection-section" class="space-y-4">
+            <!-- Sabor 1 Selector -->
+            <div id="sabor1-container" class="space-y-2">
+              <label id="sabor1-label" class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Escolha o Sabor</label>
+              <select id="sabor1-select" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 font-semibold text-slate-800 transition-all cursor-pointer">
+                <!-- options injected dynamically -->
+              </select>
+            </div>
+
+            <!-- Sabor 2 Selector (Hidden by default unless Half-and-Half checked) -->
+            <div id="sabor2-container" class="hidden space-y-2">
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Escolha o Segundo Sabor (Meio Sabor)</label>
+              <select id="sabor2-select" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 font-semibold text-slate-800 transition-all cursor-pointer">
+                <!-- options injected dynamically -->
+              </select>
+            </div>
+          </div>
+
+          <!-- SECTION: Quantity and Item Notes -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 border-t border-slate-100">
+            <!-- Quantity Counter -->
+            <div class="space-y-2">
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Quantidade</label>
+              <div class="flex items-center gap-3">
+                <button id="qty-minus" type="button" class="w-10 h-10 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 flex items-center justify-center font-bold text-lg cursor-pointer transition-colors active:scale-95">-</button>
+                <span id="qty-value" class="w-12 text-center font-bold text-lg text-slate-800">1</span>
+                <button id="qty-plus" type="button" class="w-10 h-10 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 flex items-center justify-center font-bold text-lg cursor-pointer transition-colors active:scale-95">+</button>
+              </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="space-y-2">
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Observações do Item</label>
+              <input 
+                type="text" 
+                id="item-notes-input" 
+                placeholder="Ex: sem cebola, bem assada..." 
+                class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 font-semibold text-slate-800 transition-all"
+              />
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="p-6 bg-slate-50 border-t border-slate-100 flex items-center justify-between shrink-0">
+          <div class="flex flex-col">
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Preço Unitário</span>
+            <span id="modal-price-calc" class="text-2xl font-black text-slate-900">R$ 0,00</span>
+          </div>
+          <button 
+            id="add-to-cart-btn" 
+            class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-4.5 rounded-2xl font-bold shadow-lg shadow-blue-100 uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex items-center gap-2"
+          >
+            <span>Adicionar ao Pedido</span>
+            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ORDER TRACKING / VIEW ACTIVE ORDER STATUS (Fullscreen/Modal overlay) -->
+    <div id="tracker-overlay" class="hidden fixed inset-0 z-40 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+      <div class="w-full max-w-xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden max-h-[90vh] flex flex-col transform scale-95 transition-transform duration-300">
+        <!-- Tracker Header -->
+        <div class="bg-blue-600 p-6 text-white flex items-center justify-between shrink-0">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center">
+              <i data-lucide="activity" class="w-5 h-5 text-white animate-pulse"></i>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold">Status do Pedido</h3>
+              <p class="text-xs text-blue-100 opacity-90 font-medium">Acompanhamento em Tempo Real</p>
+            </div>
+          </div>
+          <button id="close-tracker-btn" class="p-1.5 rounded-lg hover:bg-white/10 text-white transition-colors cursor-pointer">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <!-- Tracker Body -->
+        <div class="flex-1 p-6 overflow-y-auto space-y-6">
+          <!-- Order ID / Table Info Card -->
+          <div class="flex justify-between items-center bg-slate-50 p-4 rounded-2xl border border-slate-100">
+            <div>
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">ID do Pedido</span>
+              <span id="track-order-id" class="text-lg font-black text-blue-900">SNC-0000</span>
+            </div>
+            <div class="text-right">
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Localização</span>
+              <span id="track-table-num" class="text-sm font-bold text-slate-800">Mesa 00</span>
+            </div>
+          </div>
+
+          <!-- VISUAL STATUS FLOW TIMELINE -->
+          <div class="py-4 px-2">
+            <div class="relative flex items-center justify-between">
+              <!-- Background progress line -->
+              <div class="absolute left-0 right-0 h-1 bg-slate-200 z-0"></div>
+              <!-- Colored active progress line -->
+              <div id="tracker-progress-bar" class="absolute left-0 h-1 bg-green-500 z-0" style="width: 0%"></div>
+              
+              <!-- STEP 1: Pendente -->
+              <div class="relative z-10 flex flex-col items-center">
+                <div id="step-pendente" class="w-8 h-8 rounded-full bg-slate-200 border-2 border-white shadow-md flex items-center justify-center text-slate-500 font-bold text-xs transition-all duration-300">1</div>
+                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mt-2 block">Pendente</span>
+              </div>
+
+              <!-- STEP 2: Preparando -->
+              <div class="relative z-10 flex flex-col items-center">
+                <div id="step-preparando" class="w-8 h-8 rounded-full bg-slate-200 border-2 border-white shadow-md flex items-center justify-center text-slate-500 font-bold text-xs transition-all duration-300">2</div>
+                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mt-2 block">Cozinha</span>
+              </div>
+
+              <!-- STEP 3: Pronto -->
+              <div class="relative z-10 flex flex-col items-center">
+                <div id="step-pronto" class="w-8 h-8 rounded-full bg-slate-200 border-2 border-white shadow-md flex items-center justify-center text-slate-500 font-bold text-xs transition-all duration-300">3</div>
+                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mt-2 block">Pronto</span>
+              </div>
+
+              <!-- STEP 4: Entregue -->
+              <div class="relative z-10 flex flex-col items-center">
+                <div id="step-entregue" class="w-8 h-8 rounded-full bg-slate-200 border-2 border-white shadow-md flex items-center justify-center text-slate-500 font-bold text-xs transition-all duration-300">4</div>
+                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mt-2 block">Entregue</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Status Box message -->
+          <div id="tracker-status-box" class="bg-blue-50/50 border border-blue-100 p-4 rounded-2xl flex gap-3.5 items-center">
+            <div class="w-9 h-9 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 shrink-0">
+              <i data-lucide="chef-hat" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h4 id="tracker-status-title" class="text-sm font-bold text-blue-950">Seu pedido está pendente</h4>
+              <p id="tracker-status-msg" class="text-xs text-blue-600 mt-0.5 font-medium">Ele foi enviado para a cozinha e será preparado em instantes.</p>
+            </div>
+          </div>
+
+          <!-- Order Items list -->
+          <div class="space-y-3">
+            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Resumo dos Itens</h4>
+            <div id="tracker-items-list" class="divide-y divide-slate-100">
+              <!-- Injected dynamically -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Tracker Footer -->
+        <div class="p-6 bg-slate-50 border-t border-slate-100 flex gap-3 shrink-0">
+          <button 
+            id="tracker-new-order-btn" 
+            class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-2xl shadow-lg shadow-blue-100 uppercase tracking-wider transition-all cursor-pointer text-xs active:scale-95 flex items-center justify-center gap-2"
+          >
+            <i data-lucide="pizza" class="w-4 h-4"></i>
+            <span>Fazer Novo Pedido</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Script Application Logic -->
+    <script src="/js/app.js"></script>
+  </body>
+</html>
